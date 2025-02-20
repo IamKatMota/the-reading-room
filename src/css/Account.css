@@ -1,0 +1,139 @@
+/* Container for the account page */
+.accountContainer {
+    max-width: 700px;
+    margin: 50px auto;
+    padding: 25px;
+    background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
+    border-radius: 12px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    animation: fadeIn 0.8s ease-in-out;
+    transition: transform 0.3s ease-in-out;
+}
+
+.accountContainer:hover {
+    transform: scale(1.02);
+}
+
+.welcome-card h1 {
+    font-size: 26px;
+    margin: 0;
+}
+
+/* Header styles */
+.accountContainer h2 {
+    color: #2c3e50;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* User info */
+.accountContainer p {
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 15px;
+}
+
+/* List of checked-out books */
+.accountContainer ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.accountContainer li {
+    background: rgba(255, 255, 255, 0.9);
+    margin: 12px 0;
+    padding: 18px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
+    transition: all 0.3s ease-in-out;
+}
+
+.accountContainer li:hover {
+    transform: translateX(5px);
+    background: #e3f2fd;
+}
+
+/* Book title styling */
+.accountContainer li strong {
+    font-size: 18px;
+    color: #007bff;
+    text-shadow: 1px 1px 2px rgba(0, 123, 255, 0.3);
+}
+
+/* Return button */
+.accountContainer button {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.accountContainer button:hover {
+    background: linear-gradient(135deg, #ff6f61, #ff1b2b);
+    transform: scale(1.05);
+}
+
+/* Error message styling */
+.errorMessage {
+    color: #d9534f;
+    font-size: 14px;
+    margin-top: 5px;
+    font-weight: bold;
+    animation: shake 0.4s ease-in-out;
+}
+
+/* Rental History Section */
+.history-section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    margin-top: 20px;
+}
+
+.history .book-title {
+    color: #888;
+    font-weight: normal;
+}
+
+.history .history-tag {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
