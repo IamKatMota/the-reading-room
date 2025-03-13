@@ -8,15 +8,16 @@ export default function LoginModal({ setIsLoginOpen, setToken}){
     const [password, setPassword] = useState("")
     const [error, setError] = useState(null)
 
-    async function handleLogin(event){
-        event.preventDefault()
-
-        const APIResponse = await loginUser(email,password)
-        if (APIResponse.success){
-            setToken(APIResponse.data.token) //store token
-            setIsLoginOpen(false) //close modal
-        }else {
-            setError(APIResponse.error)
+    async function handleLogin(event) {
+        event.preventDefault();
+    
+        const APIResponse = await loginUser(email, password);
+        if (APIResponse.success) {
+            setToken(APIResponse.data.token);
+            localStorage.setItem("authToken", APIResponse.data.token);
+            setIsLoginOpen(false);
+        } else {
+            setError(APIResponse.error);
         }
     }
     return (

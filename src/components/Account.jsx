@@ -1,68 +1,71 @@
 /* TODO - add your code to create a functional React component that renders account details for a logged in user. Fetch the account data from the provided API. You may consider conditionally rendering a message for other users that prompts them to log in or create an account.  */
 import { useEffect, useState } from "react";
-import { updateBookStatus } from "../api"; //function to return books
+import { updateBookStatus, deleteReservation } from "../api"; //function to return books
 import "../css/Account.css";
 
-export default function Account() {
-    const [firstname, setFirstname] = useState("");
+export default function Account({user}) {
     const [checkedOutBooks, setCheckedOutBooks] = useState([]); //the list of checked-out books (stores in localStorage when checking out)
     const [errorMessage, setErrorMessage] = useState(null);
     const [rentalHistory, setRentalHistory] = useState([]);
 
-    useEffect(() => {
-        // get user name and checked out books from localStorage
-        const storedFirstname = localStorage.getItem("firstname");
-        const storedBooks = JSON.parse(localStorage.getItem("checkedOutBooks")) || []; //Converts the stored string back into an object/array when retrieving it
-        const storedHistory = JSON.parse(localStorage.getItem("rentalHistory")) || []; // Retrieve past rentals
+    // Update state when `user` prop changes
+   useEffect(() => {
+    if (user === null) {
+        console.log("⏳ Waiting for user data...");
+        return;  // Prevent running the effect until `user` is available
+    }
 
+    if (user && Array.isArray(user.books)) {
+        setCheckedOutBooks([...user.books]);
+    } else {
+        console.log("🚨 No books found for user.");
+    }
+}, [user]);
 
-        if (storedFirstname) {
-            setFirstname(storedFirstname);
-            setCheckedOutBooks(storedBooks);
-            setRentalHistory(storedHistory);
+    async function handleReturnBook(reservationId, bookId) {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            setErrorMessage("You must be logged in to return a book.");
+            return;
         }
-
-    }, []);
-
-    async function handleReturnBook(bookId) {
-        const token = localStorage.getItem("authToken"); //look in localStorage to see if user has a saved login token
-
-        //send a request to the API asking to update the books status, true means book is now available again
-        const APIResponse = await updateBookStatus(bookId, token, true);
-
+    
+        // Step 1: Delete the reservation
+        const APIResponse = await deleteReservation(reservationId, token);
         if (APIResponse.success) {
-            // Find the returned book
-            const returnedBook = checkedOutBooks.find(book => book.id === bookId);
-            //remove returned book from list of books in state by keeping all the books except the one with the returned books id 
-            const updatedBooks = checkedOutBooks.filter(book => book.id !== bookId);
+            const returnedBook = checkedOutBooks.find(book => book.reservationId === reservationId);
+            const updatedBooks = checkedOutBooks.filter(book => book.reservationId !== reservationId);
             setCheckedOutBooks(updatedBooks);
-            // Add the book to rental history if it doesn't already exist
-            const updatedHistory = [...rentalHistory, returnedBook];
-            setRentalHistory(updatedHistory);
-
-            // Update localStorage
-            localStorage.setItem("checkedOutBooks", JSON.stringify(updatedBooks));
-            localStorage.setItem("rentalHistory", JSON.stringify(updatedHistory));
+    
+            if (returnedBook) {
+                setRentalHistory([...rentalHistory, returnedBook]);
+    
+                // Step 2: Mark book as available
+                const updateResponse = await updateBookStatus(bookId, token, true);
+                if (!updateResponse.success) {
+                    setErrorMessage("Reservation deleted, but book status update failed.");
+                }
+            }
+    
             setErrorMessage("");
         } else {
-            setErrorMessage("Failed to return the book.")
+            setErrorMessage("Failed to return the book.");
         }
     }
 
     return (
         <div className="accountContainer">
             <div className="welcome-card">
-                <h2>Welcome, {firstname}</h2>
+                <h2>Welcome, {user?.firstname || "Reader"}</h2>
                 <p className="welcome-message">Explore your reading history and manage your book checkouts with ease.</p>
             </div>
 
             <h3>Checked Out Books:</h3>
-            {checkedOutBooks.length > 0 ? (
+            {checkedOutBooks && checkedOutBooks.length > 0 ? (
                 <ul>
                     {checkedOutBooks.map((book) => (
-                        <li key={book.id}>
+                        <li key={book.reservationId || book.id}>
                             <strong>{book.title}</strong> by {book.author}
-                            <button className="return-button" onClick={() => handleReturnBook(book.id)}>Return Book</button>
+                            <button className="return-button" onClick={() => handleReturnBook(book.reservationId, book.id)}>Return Book</button>
                             {errorMessage && <p className="error-message">{errorMessage}</p>}
                         </li>
                     ))}

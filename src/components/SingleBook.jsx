@@ -1,6 +1,6 @@
 /* TODO - add your code to create a functional React component that renders details for a single book. Fetch the book data from the provided API. You may consider conditionally rendering a 'Checkout' button for logged in users. */
 import {useEffect, useState} from "react";
-import { fetchSingleBook, updateBookStatus } from "../api";
+import { fetchSingleBook, updateBookStatus, createReservation } from "../api";
 import {useParams, Link} from "react-router-dom";
 import "../css/SingleBook.css";
 
@@ -24,27 +24,34 @@ export default function SingleBook({ token }){
         getSingleBook();
     }, [id]) //runs when id changes
 
-    async function handleCheckout(){
-        if (!token){
+    async function handleCheckout() {
+        if (!token) {
             setCheckoutError("You must be logged in to check out a book.");
             return;
         }
-        setIsCheckingOut(true); //disables button while processing
-        setCheckoutError(""); //clear previous error messages
-
-        const APIResponse = await updateBookStatus(id, token, false); //set book as checked out
-
-        if (APIResponse.success){
-            setBook((prevBook)=> ({...prevBook, available: false})); //update UI
-
-            //sasve checked-out books in localStorage
-            const checkedOutBooks = JSON.parse(localStorage.getItem("checkedOutBooks")) || [];
-            localStorage.setItem("checkedOutBooks", JSON.stringify([...checkedOutBooks, book]));
-
-            alert("Book checked out successfully!")
-        }else{
-            setCheckoutError(APIResponse.error || "Failed to check out the book.")
+        setIsCheckingOut(true);
+        setCheckoutError("");
+    
+        // Step 1: Create a reservation
+        const reservationResponse = await createReservation(id, token);
+        if (!reservationResponse.success) {
+            setCheckoutError(reservationResponse.error || "Failed to create reservation.");
+            setIsCheckingOut(false);
+            return;
         }
+    
+        // Step 2: Update book status (optional)
+        const bookResponse = await updateBookStatus(id, token, false);
+        if (!bookResponse.success) {
+            setCheckoutError(bookResponse.error || "Failed to update book status.");
+            setIsCheckingOut(false);
+            return;
+        }
+    
+        // Step 3: Update UI
+        setBook((prevBook) => ({ ...prevBook, available: false }));
+    
+        alert("Book checked out successfully!");
         setIsCheckingOut(false);
     }
     

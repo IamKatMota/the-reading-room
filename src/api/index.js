@@ -26,9 +26,9 @@ export async function fetchSingleBook(id) {
     }
 }
 
-export async function updateBookStatus(id, token, available) {
+export async function updateBookStatus(bookId, token, available) {
     try {
-        const promise = await fetch(`${API_URL}/books/${id}`, {
+        const promise = await fetch(`${API_URL}/books/${bookId}`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
@@ -47,7 +47,27 @@ export async function updateBookStatus(id, token, available) {
         return {success: true, error: error.message}
     }
 }
+export async function fetchUserData(token) {
+    try {
+        const response = await fetch(`${API_URL}/users/me`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
 
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to fetch user data.");
+        }
+        return { success: true, data };
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        return { success: false, error: error.message };
+    }
+}
 export async function loginUser(email, password) {
     try {
         const promise = await fetch(`${API_URL}/users/login`, {
@@ -88,7 +108,6 @@ export async function registerUser(firstname, lastname, email, password) {
             })
         })
         const response = await promise.json()
-        console.log("Server Response:", response);
         if (!promise.ok){
             throw new Error(response.message || response.error|| "Registration Failed.")
         }
@@ -96,5 +115,57 @@ export async function registerUser(firstname, lastname, email, password) {
     }catch(error){
         console.error("Registration failed:", error.message)
         return {success: false, error: error.message}
+    }
+}
+
+export async function getUserData(authToken, setUser, setToken) {
+    const APIResponse = await fetchUserData(authToken);
+    if (APIResponse.success) {
+        setUser(APIResponse.data);
+    } else {
+        console.error("Error fetching user:", APIResponse.error);
+        setToken(null);
+        localStorage.removeItem("authToken");
+    }
+}
+export async function createReservation(bookId, token) {
+    try {
+        const response = await fetch(`${API_URL}/reservations`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ bookId })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to create reservation.");
+        }
+        return { success: true, data };
+    } catch (error) {
+        console.error("Error creating reservation:", error);
+        return { success: false, error: error.message };
+    }
+}
+export async function deleteReservation(reservationId, token) {
+    try {
+        const response = await fetch(`${API_URL}/reservations/${reservationId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to delete reservation.");
+        }
+        return { success: true, data };
+    } catch (error) {
+        console.error("Error deleting reservation:", error);
+        return { success: false, error: error.message };
     }
 }
